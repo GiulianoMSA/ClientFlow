@@ -37,4 +37,5 @@ Thumbs.db
 
 # Generated Jest/TypeScript files
 **/*.js.map
-**/*.d.ts
+**/jest.config.d.ts
+**/jest.config.js.map
