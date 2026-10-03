@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum ClientStatus {
+  LEAD
+  ACTIVE
+  INACTIVE
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ActivityType {
+  CLIENT_CREATED
+  CLIENT_UPDATED
+  CLIENT_DELETED
+  TASK_CREATED
+  TASK_UPDATED
+  TASK_DELETED
+}
+
+model User {
+  id                  Int      @id @default(autoincrement())
+  email               String   @unique
+  password            String
+  name                String
+  role                UserRole @default(USER)
+  refreshTokenHash    String?
+  refreshTokenExp     DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  clients             Client[]
+  tasks               Task[]
+  activities          Activity[]
+}
+
+model Client {
+  id Int @id @default(autoincrement())
+  name String
+  company String?
+  email String?
+  phone String?
+  status ClientStatus @default(LEAD)
+  ownerId Int
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  tasks Task[]
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+model Task {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+
+  ownerId     Int
+  owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  clientId    Int?
+  client      Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([ownerId])
+  @@index([clientId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+}
+
+model Activity {
+  id        Int          @id @default(autoincrement())
+  type      ActivityType
+  message   String
+  userId    Int
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime     @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
