@@ -12,8 +12,14 @@ import {
 
 import { refreshToken } from '../services/auth.service';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
+if (!apiUrl) {
+  throw new Error('VITE_API_URL is not configured.');
+}
+
 export const api = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -29,8 +35,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-interface RetryConfig
-  extends InternalAxiosRequestConfig {
+interface RetryConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
@@ -56,6 +61,7 @@ api.interceptors.response.use(
 
     if (!storedRefreshToken) {
       clearTokens();
+
       window.dispatchEvent(
         new Event('auth:session-expired'),
       );

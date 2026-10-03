@@ -7,6 +7,12 @@ import type {
   LoginResponse,
 } from '../types/auth';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
+if (!apiUrl) {
+  throw new Error('VITE_API_URL is not configured.');
+}
+
 export async function login(
   credentials: LoginCredentials,
 ): Promise<LoginResponse> {
@@ -22,7 +28,7 @@ export async function refreshToken(
   token: string,
 ): Promise<LoginResponse> {
   const response = await axios.post<LoginResponse>(
-    'http://localhost:3000/auth/refresh',
+    `${apiUrl}/auth/refresh`,
     {
       refreshToken: token,
     },
